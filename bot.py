@@ -2,12 +2,12 @@ import time
 import logging
 
 from aiogram import Bot, Dispatcher, executor, types
-from beats.beats_list import beats_list
+from beats.beats_list import beats_dict
 from details.details import REQUISITES, STORES, TOKEN
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters.state import State, StatesGroup
+from db.db_commands import register_user, select_user
 
-TOKEN = TOKEN
 
 logging.basicConfig(level=logging.INFO)
 
@@ -21,6 +21,11 @@ class DataInput(StatesGroup):
 
 @dp.message_handler(commands=['start'])
 async def start_handler(message: types.Message):
+    user = register_user(message)
+    if user:
+        await message.answer('You successfully registered!')
+    else:
+        await message.answer('You already have been registered!')
     user_id = message.from_user.id
     user_full_name = message.from_user.full_name
     logging.info(f'{user_id=} {user_full_name=} {time.asctime()}')
@@ -48,23 +53,24 @@ async def store_handler(message: types.Message):
 
 @dp.message_handler(commands=['genres'])
 async def genres_handler(message: types.Message):
-    for x in beats_list.keys():
+    for x in beats_dict.keys():
         await message.answer(f'<i>{x}</i>', parse_mode='html')
         await DataInput.r.set()
 
 
 @dp.message_handler(state=DataInput.r)
 async def concrete_genre_handler(message: types.Message):
+    await message.answer('Wait a second...')
     r = message.text
-    if r in beats_list.keys():
+    if r in beats_dict.keys():
         await bot.send_audio(message.from_user.id,
-                             audio=types.InputFile(beats_list[r]))
+                             audio=types.InputFile(beats_dict[r]))
 
 
 @dp.message_handler(commands=['beats'])
 async def beats_handler(message: types.Message):
 
-    for i in beats_list.values():
+    for i in beats_dict.values():
         await bot.send_audio(message.from_user.id, audio=types.InputFile(i))
 
 
@@ -84,6 +90,16 @@ async def links_handler(message: types.Message):
     await message.answer(f"{message.from_user.full_name}, "
                          f"here is link to my stores on web:\n{x}",
                          parse_mode='html')
+
+
+# @dp.message_handler(command=['profile'])
+# async def show_profile(message: types.Message):
+#     user = select_user(message.from_user.id)
+#
+#     await message.answer(f'Your profile\n'
+#                          f'Name: {user.name}\n'
+#                          f'Username: @{user.username}\n'
+#                          f'Admin: {"Yes" if user.admin else "No"}')
 
 
 if __name__ == '__main__':
