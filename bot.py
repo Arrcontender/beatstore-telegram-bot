@@ -6,7 +6,9 @@ from beats.beats_list import beats_dict
 from details.details import REQUISITES, STORES, TOKEN
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters.state import State, StatesGroup
-from db.db_commands import register_user, select_user
+from db.db_commands import register_user, show_all_beats
+from db.db_beats_init import init_beats
+from aiogram.dispatcher import FSMContext
 
 
 logging.basicConfig(level=logging.INFO)
@@ -16,7 +18,16 @@ dp = Dispatcher(bot=bot, storage=MemoryStorage())
 
 
 class DataInput(StatesGroup):
-    r = State()
+    genre_state = State()
+
+
+@dp.message_handler(commands=['init'])
+async def admin_init_all_beats(message: types.Message):
+    init = init_beats()
+    if init:
+        await message.answer('All beats were initialized!')
+    else:
+        await message.answer('Oops... beats were not initialized')
 
 
 @dp.message_handler(commands=['start'])
@@ -55,23 +66,25 @@ async def store_handler(message: types.Message):
 async def genres_handler(message: types.Message):
     for x in beats_dict.keys():
         await message.answer(f'<i>{x}</i>', parse_mode='html')
-        await DataInput.r.set()
+        await DataInput.genre_state.set()
 
 
-@dp.message_handler(state=DataInput.r)
-async def concrete_genre_handler(message: types.Message):
+@dp.message_handler(state=DataInput.genre_state)
+async def concrete_genre_handler(message: types.Message, state: FSMContext):
     await message.answer('Wait a second...')
     r = message.text
     if r in beats_dict.keys():
         await bot.send_audio(message.from_user.id,
                              audio=types.InputFile(beats_dict[r]))
+    await state.finish()
 
 
+# FIXME: need to fix uploading file from URL
 @dp.message_handler(commands=['beats'])
 async def beats_handler(message: types.Message):
-
-    for i in beats_dict.values():
-        await bot.send_audio(message.from_user.id, audio=types.InputFile(i))
+    all_beats = show_all_beats()
+    for i in all_beats:
+        await bot.send_audio(message.from_user.id, audio=types.InputFile(i[1]), caption=i[0])
 
 
 @dp.message_handler(commands=['reqs'])
@@ -90,16 +103,6 @@ async def links_handler(message: types.Message):
     await message.answer(f"{message.from_user.full_name}, "
                          f"here is link to my stores on web:\n{x}",
                          parse_mode='html')
-
-
-# @dp.message_handler(command=['profile'])
-# async def show_profile(message: types.Message):
-#     user = select_user(message.from_user.id)
-#
-#     await message.answer(f'Your profile\n'
-#                          f'Name: {user.name}\n'
-#                          f'Username: @{user.username}\n'
-#                          f'Admin: {"Yes" if user.admin else "No"}')
 
 
 if __name__ == '__main__':

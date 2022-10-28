@@ -2,7 +2,7 @@
 <project version="4">
   <component name="DBNavigator.Project.DataEditorManager">
     <record-view-column-sorting-type value="BY_INDEX" />
-    <value-preview-text-wrapping value="true" />
+    <value-preview-text-wrapping value="false" />
     <value-preview-pinned value="false" />
   </component>
   <component name="DBNavigator.Project.DataExportManager">
@@ -24,19 +24,23 @@
   <component name="DBNavigator.Project.DatabaseBrowserManager">
     <autoscroll-to-editor value="false" />
     <autoscroll-from-editor value="true" />
-    <show-object-properties value="true" />
+    <show-object-properties value="false" />
     <loaded-nodes />
   </component>
   <component name="DBNavigator.Project.DatabaseConsoleManager">
-    <connection id="08f3b453-9371-4a5a-8234-790ec2670175">
-      <console name="Connection" type="STANDARD" schema="" session="Main" />
+    <connection id="bb193839-8936-44d6-b81c-b60b577c6acc">
+      <console name="Connection 1" type="STANDARD" schema="information_schema" session="Main" />
     </connection>
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">
     <open-files />
   </component>
   <component name="DBNavigator.Project.DatabaseSessionManager">
-    <connection id="08f3b453-9371-4a5a-8234-790ec2670175" />
+    <connection id="bb193839-8936-44d6-b81c-b60b577c6acc" />
+  </component>
+  <component name="DBNavigator.Project.DatasetFilterManager">
+    <filter-actions connection-id="bb193839-8936-44d6-b81c-b60b577c6acc" dataset="public.users" active-filter-id="" />
+    <filter-actions connection-id="bb193839-8936-44d6-b81c-b60b577c6acc" dataset="public.Beats" active-filter-id="" />
   </component>
   <component name="DBNavigator.Project.EditorStateManager">
     <last-used-providers />
@@ -67,23 +71,23 @@
   </component>
   <component name="DBNavigator.Project.Settings">
     <connections>
-      <connection id="08f3b453-9371-4a5a-8234-790ec2670175" active="true" signed="true">
+      <connection id="bb193839-8936-44d6-b81c-b60b577c6acc" active="true" signed="true">
         <database>
-          <name value="Connection" />
+          <name value="Beats" />
           <description value="" />
           <database-type value="POSTGRES" />
           <config-type value="BASIC" />
-          <database-version value="9999.0" />
+          <database-version value="14.5" />
           <driver-source value="BUILTIN" />
           <driver-library value="" />
           <driver value="" />
           <url-type value="DATABASE" />
           <host value="localhost" />
           <port value="5432" />
-          <database value="postgres" />
+          <database value="Beats" />
           <type value="USER_PASSWORD" />
-          <user value="" />
-          <deprecated-pwd value="" />
+          <user value="postgres" />
+          <deprecated-pwd value="RHJlZHJhbTE=" />
         </database>
         <properties>
           <auto-commit value="false" />
