@@ -1,12 +1,14 @@
 import time
 import logging
+from db.db_commands import register_user, \
+    show_all_beats, filter_by_genre_from_db
+from db.db_beats_init import init_beats
+from details.details import REQUISITES, STORES, TOKEN
 
 from aiogram import Bot, Dispatcher, executor, types
-from beats.beats_list import beats_dict
-from details.details import REQUISITES, STORES, TOKEN
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters.state import State, StatesGroup
-from db.db_commands import register_user, select_user
+from aiogram.dispatcher import FSMContext
 
 
 logging.basicConfig(level=logging.INFO)
@@ -16,11 +18,22 @@ dp = Dispatcher(bot=bot, storage=MemoryStorage())
 
 
 class DataInput(StatesGroup):
-    r = State()
+    genre_state = State()
+
+
+@dp.message_handler(commands=['init'])
+async def admin_init_all_beats(message: types.Message):
+    """ Init database table with beats (command for owner) """
+    init = init_beats()
+    if init:
+        await message.answer('All beats were initialized!')
+    else:
+        await message.answer('Oops... beats were not initialized')
 
 
 @dp.message_handler(commands=['start'])
 async def start_handler(message: types.Message):
+    """ Command to register new user and start bot """
     user = register_user(message)
     if user:
         await message.answer('You successfully registered!')
@@ -51,31 +64,47 @@ async def store_handler(message: types.Message):
                          parse_mode='html')
 
 
-@dp.message_handler(commands=['genres'])
-async def genres_handler(message: types.Message):
-    for x in beats_dict.keys():
-        await message.answer(f'<i>{x}</i>', parse_mode='html')
-        await DataInput.r.set()
-
-
-@dp.message_handler(state=DataInput.r)
-async def concrete_genre_handler(message: types.Message):
-    await message.answer('Wait a second...')
-    r = message.text
-    if r in beats_dict.keys():
-        await bot.send_audio(message.from_user.id,
-                             audio=types.InputFile(beats_dict[r]))
-
-
 @dp.message_handler(commands=['beats'])
 async def beats_handler(message: types.Message):
+    """ Send all beats to user with additional information """
+    all_beats = show_all_beats()
+    for i in all_beats:
+        await bot.send_audio(message.from_user.id,
+                             audio=types.InputFile(i['url']),
+                             caption=i['genre'])
+        await message.answer(f'Leasing: {i["leasing"]}\n'
+                             f'Exclusive: {i["exclusive"]}')
 
-    for i in beats_dict.values():
-        await bot.send_audio(message.from_user.id, audio=types.InputFile(i))
+
+@dp.message_handler(commands=['genres'])
+async def genres_handler(message: types.Message):
+    """ Receive message about genre of the beat from user """
+    all_beats = show_all_beats()
+    print(all_beats)
+    for i in all_beats:
+        await message.answer(f'<i>{i["genre"]}</i>', parse_mode='html')
+        await DataInput.genre_state.set()
+
+
+@dp.message_handler(state=DataInput.genre_state)
+async def concrete_genre_handler(message: types.Message, state: FSMContext):
+    """ Send beats by genre to user with additional information """
+    await message.answer('Wait a second...')
+    r = message.text
+    beats_by_genre = filter_by_genre_from_db(r)
+    print(beats_by_genre)
+    for i in beats_by_genre:
+        print(i)
+        await bot.send_audio(message.from_user.id,
+                             audio=types.InputFile(i['url']))
+        await message.answer(f'Leasing: {i["leasing"]}\n'
+                             f'Exclusive: {i["exclusive"]}')
+    await state.finish()
 
 
 @dp.message_handler(commands=['reqs'])
 async def reqs_handler(message: types.Message):
+    """ Send reqs to user with additional information """
     x = '\n'.join(REQUISITES)
     await message.answer(f"{message.from_user.full_name}, "
                          f"here is my payments details to purchase beats or "
@@ -86,21 +115,12 @@ async def reqs_handler(message: types.Message):
 
 @dp.message_handler(commands=['links'])
 async def links_handler(message: types.Message):
+    """ Send beat stores from web to user with additional information """
     x = '\n'.join(STORES)
     await message.answer(f"{message.from_user.full_name}, "
-                         f"here is link to my stores on web:\n{x}",
+                         f"here is links to my stores on web:\n{x}",
                          parse_mode='html')
 
 
-# @dp.message_handler(command=['profile'])
-# async def show_profile(message: types.Message):
-#     user = select_user(message.from_user.id)
-#
-#     await message.answer(f'Your profile\n'
-#                          f'Name: {user.name}\n'
-#                          f'Username: @{user.username}\n'
-#                          f'Admin: {"Yes" if user.admin else "No"}')
-
-
 if __name__ == '__main__':
-    executor.start_polling(dp)
+    executor.start_polling(dp, skip_updates=True)
