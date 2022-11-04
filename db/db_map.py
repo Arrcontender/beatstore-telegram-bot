@@ -8,9 +8,9 @@ class Beats(Base):
     __tablename__ = 'beats'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(255))
-    url = Column(String(600))
-    genre = Column(String(255))
+    name = Column(String, nullable=False)
+    url = Column(String, nullable=False)
+    genre = Column(String)
     leasing = Column(Integer)
     exclusive = Column(Integer)
 
@@ -22,7 +22,7 @@ class Beats(Base):
 class User(Base):
     __tablename__ = 'users'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     username = Column(String)
     name = Column(String)
     admin = Column(Boolean, default=False)

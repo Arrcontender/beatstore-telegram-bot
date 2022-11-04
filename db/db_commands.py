@@ -1,4 +1,4 @@
-from sqlalchemy.exc import PendingRollbackError, IntegrityError
+from sqlalchemy.exc import IntegrityError
 
 from .db_engine import session
 from .db_map import User, Beats
@@ -16,11 +16,14 @@ def register_user(message):
         return False
 
 
-def filter_by_genre(message):
-    x = session.query(Beats).filter(Beats.genre == message).all()
-    pass
+def filter_by_genre_from_db(value):
+    genre = session.query(Beats.name, Beats.url,
+                          Beats.leasing, Beats.genre,
+                          Beats.exclusive).filter(Beats.genre == value).all()
+    return genre
 
 
 def show_all_beats():
-    all_beats = session.query(Beats.name, Beats.url).all()
+    all_beats = session.query(Beats.name, Beats.url,
+                              Beats.leasing, Beats.genre, Beats.exclusive).all()
     return all_beats

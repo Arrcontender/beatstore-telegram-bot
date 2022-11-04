@@ -41,6 +41,7 @@
   <component name="DBNavigator.Project.DatasetFilterManager">
     <filter-actions connection-id="bb193839-8936-44d6-b81c-b60b577c6acc" dataset="public.users" active-filter-id="" />
     <filter-actions connection-id="bb193839-8936-44d6-b81c-b60b577c6acc" dataset="public.Beats" active-filter-id="" />
+    <filter-actions connection-id="bb193839-8936-44d6-b81c-b60b577c6acc" dataset="public.beats" active-filter-id="" />
   </component>
   <component name="DBNavigator.Project.EditorStateManager">
     <last-used-providers />
